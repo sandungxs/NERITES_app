@@ -1,2 +1,2 @@
 # App_1
-app 1 sin nombre chulo aun
+Web platform module that allows the exploration of the transcriptome and of the gene co-expression network analyzed and generated in this project. 
