@@ -55,8 +55,7 @@ ui <- dashboardPage(
                             fluidRow(column(9,
                                             tags$div(span(tags$b("NERITES"),": bla bla bla",
                                                           style = 'color: #1f618d; font-weight: 540; font-size: 42px; font-family: "Alatsi"", Verdana, sans-serif;')),
-                                            style = "margin-top: 45px; margin-left: 35px;"
-                            ,
+                                            style = "margin-top: 45px; margin-left: 35px;",
                             # column(2,
                             #        img(
                             #          src = "pharaohlogo-removebg-preview.png",
@@ -67,6 +66,7 @@ ui <- dashboardPage(
                             # ),
                             column(1)
                             ),
+                            # Introduction
                             fluidRow(
                               column(11,
                                      tags$br(),
@@ -82,7 +82,8 @@ ui <- dashboardPage(
                                      fluidRow(tags$br()),
                                      fluidRow(
                                        column(1),
-                                       column(12,
+                                       # Home Boxes
+                                       column(12,style= 'margin-left: 40px;',
                                               valueBox(a("Rhythmicity", href="#shiny-tab-rhythm", "data-toggle" = "tab", "style" = "color:white"),
                                                        "Explore how rhythmicity changes under stress",
                                                        icon = icon("wave-square",class = "fa-solid fa-wave-square",
@@ -94,7 +95,7 @@ ui <- dashboardPage(
                                                                    lib ="font-awesome" ), width = 4, color = "lime"),
                                               
                                               valueBox(a("Predictive model", href="#shiny-tab-predictive", "data-toggle" = "tab", "style" = "color:white"),
-                                                       "Tune your own predictive model",
+                                                       "Tune our predictive model",
                                                        icon = icon("buromobelexperte",class="fa-brands fa-buromobelexperte",
                                                                    lib ="font-awesome"), width = 4, color = "purple")
                                        )),
@@ -114,16 +115,32 @@ ui <- dashboardPage(
                                      
                                      fluidRow(br()),
                                      fluidRow(br()),
+                                     fluidRow(hr(style = 'margin-left: 80px;'),br()),
                                      fluidRow(
-                                       column(7, 
-                                              tags$div(align="justify", style = 'font-size: 16px; margin-left: 20px;',  br(), 
+                                       column(4,
+                                              tags$div(style = "margin-left: 20px;",
+                                                       img(
+                                                         src = "rafi.jpg",
+                                                         alt = "rafi",
+                                                         width = 450,
+                                                         height = 300, style="display: block; margin-left: 20px; margin-right: auto;"
+                                                       )
+                                              )
+                                       ),
+                                       column(8, 
+                                              tags$div(align="justify", style = 'font-size: 16px; margin-left: 140px;',  br(), br(),
                                                        "The exploration of orthology is based on the construction of orthogroups, sets of genes that descend from a 
                          single gene in the common ancestor of the species under study. In this way, it is possible to trace the evolutionary 
                          history of these genes and to analyze the changes that the orthogroup has undergone from its appearance to 
                          its current situation in the extant species.", br(), br(), "Regarding the species supported by the tool, two different models are offered. 
                          The default model focuses on 36 species of the ", tags$b("Viridiplantae"), " clade, with representatives of the 
                          Chlorophyta and Streptophyta clades chosen to span the evolutionary set of these groups.",
-                                                       br(), br(),"Furthermore, an additional ", tags$b("Global"), " model includes species from the whole Archaeplastida clade, 
+                                                       br(), br(),br(),
+                                              column(1))),
+                                     fluidRow(br()),
+                                     fluidRow(column(12,
+                                              tags$div(align= "justify", style = 'font-size: 16px; margin-left: 35px;', br(),
+                                                       "Furthermore, an additional ", tags$b("Global"), " model includes species from the whole Archaeplastida clade, 
                          as well as examples of Stramenopiles and Cryptophytes. Note that although both models contain the green lineage,
                          their results may vary because the common ancestors of the groups are very distant in time,
                          so for a more accurate analysis it is recommended to use the Viridiplantae model, while for a more 
@@ -131,28 +148,65 @@ ui <- dashboardPage(
                          the tree, PharaohFUN allows the exploration of the proteins encoded by the orthogroup genes, implementing 
                          modules for interactive tree viewing, PFAM module determination, multiple sequence alignment, Gene Ontology 
                          terms annotation, KEGG pathways annotation, exploration of physical interactions between proteins 
-                         and scientific literature annotation.")
-                                       ),
-                                       column(4,
-                                              tags$div(style = "margin-left: 20px;",
-                                                       img(
-                                                         src = "species_gg46-removebg-preview.png",
-                                                         alt = "species",
-                                                         width = 400,
-                                                         height = 600, style="display: block; margin-left: 20px; margin-right: auto;"
-                                                       )
-                                              )
-                                       ),
-                                       column(1)
+                         and scientific literature annotation.")),
+                                                       
+                                                       ),
                                        
-                                     )
+                                       column(1),br()
+                                       
+                                     ),
+                                     fluidRow(hr(style = 'margin-left: 80px;'))
 
                             )
-                            ))))))
+                            ))),
+                    
+                    # Rhythm exploration
+                    tabItem(tabName = "rhythm",
+                            h2(""),
+                            fluidRow(valueBox("Rhythmicity",
+                                              subtitle = "Explore how rhythmicity changes under stress",
+                                              icon = icon("wave-square",class = "fa-solid fa-wave-square",
+                                                          lib ="font-awesome" ), width = 4)),
+                            br(),
+                            fluidRow(column(11,tags$div(align="justify", style = 'font-size: 16px;',
+                            tags$b("NERITES"), "allows researchers to explore the expression profiles of 
+                                      individual genes in",tags$b(tags$i("Raphidocelis subcapitata")), " and analyse their rhythmicity. 
+                                      This data has been generated in our lab over three complete diurnal cycles under", 
+                                     tags$b("long day (summer day, 16h light / 8h dark) and short day (winter day, 8h light / 16h dark)"), 
+                                     "conditions. In this app, users can visualize gene expression profiles of their
+                             interest, compare their patterns under short day and long day conditions. Users can also
+                             perform" , tags$b("statistical analysis"),  "over the rhythmicity of gene expression profiles.", " See our", tags$b("video tutorial"),
+                                     "for details or follow the next steps to perform your analysis"),
+                            br(),
+                            box(title = span(tags$b("Photoperiod selection"), style = "color:#34c5d1; font-size: 16px; "), status = "info", width = "500",
+                                "Please select the desired photoperiod from the following list for performing the analysis:", br(),
+                                
+                                shinyWidgets::awesomeRadio(
+                                  inputId = "photoperiod_1",
+                                  label = "", 
+                                  choices = c("Long Day (LD)", "Short Day (SD)"),
+                                  selected = "Long Day (LD)",
+                                  inline = TRUE, 
+                                  status = "info"
+                                ),
+                                br(),
+                                span(tags$b("Gene of interest"), style = "color:#34c5d1; font-size: 16px; "),
+                                div(br(),"Below you can write the ID associated to the gene whose rhythmicity you
+                             wish to analyze."),
+                                fluidRow(
+                                  column(5, textInput("geneInt1", label = "", 
+                                                      width = "100%", placeholder = "R.sub gene")))
+                                
+                            ))), 
+                            
+                            
+                            )
+                    
+                    
+                    )))
 
 
                 
-
 
 
 
