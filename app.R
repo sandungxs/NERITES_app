@@ -166,7 +166,7 @@ ui <- dashboardPage(
                             fluidRow(valueBox("Rhythmicity",
                                               subtitle = "Explore how rhythmicity changes under stress",
                                               icon = icon("wave-square",class = "fa-solid fa-wave-square",
-                                                          lib ="font-awesome" ), width = 4)),
+                                                          lib ="font-awesome" ), width = 6)),
                             br(),
                             fluidRow(column(11,tags$div(align="justify", style = 'font-size: 16px;',
                             tags$b("NERITES"), "allows researchers to explore the expression profiles of 
@@ -195,12 +195,104 @@ ui <- dashboardPage(
                              wish to analyze."),
                                 fluidRow(
                                   column(5, textInput("geneInt1", label = "", 
-                                                      width = "100%", placeholder = "R.sub gene")))
+                                                      width = "100%", placeholder = "R.sub gene")),
+                                  column(2, div( style = "margin-top: 21px;", 
+                                                 shinyWidgets::actionBttn("run_button2", "Let's go", size = "sm", icon = icon("magnifying-glass"),
+                                                                          style = "float", color = "primary")))),
                                 
-                            ))), 
+                            ),
+                            br(),
+                            box(status = "info",  width = "500",
+                                title = span(tags$b("Results"), style = "color:#34c5d1; font-size: 16px; "),
+                                "Results for the query gene are displayed below, arranged in 
+                      different tabs. The execution of each analysis is initiated from the", tags$b("Start 
+                      button"),"within each of the tabs, with specific instructions for each analysis.",
+                                div(br()),
+                                tabsetPanel(type = "tabs",
+                                            tabPanel("Graphical Representation", 
+                                                     fluidRow(br()),
+                                                     div("This tab shows four different results. First of all, a table with up to 5 best 
+                                         matches for the query sequence in the chosen proteome, with decreasing confidence. First row
+                                         corresponds to best match, which is used to perform subsequent analysis. If you are interested
+                                         in another one, please copy de ID and paste it in Gene ID-based search tab. Secondly, a complete list of the genes
+                                         that are assigned to the same orthogroup as the query. Next, the proportion of  genes of each species. 
+                                         Finally, a gene tree show the evolutionary relationships between those genes. All results can be downloaded 
+                                         using the buttons at the bottom of the page."),
+                                                     fluidRow(br()),
+                                                     
+                                                     # shinyjs::useShinyjs(),
+                                                     # shinyjs::hidden(div(id='loading.tree2',h3('Please be patient, building graph ...'))),
+                                                     # uiOutput(outputId = "error_tree2"),
+                                                     # fluidRow(tags$div(id = "box_tree_seq_table2")),
+                                                     # fluidRow(tags$br()),
+                                                     # splitLayout(cellWidths = c("50%", "50%"),
+                                                     #             tags$div(id = "box_tree_text2"), tags$div(id = "box_tree_pie2")),
+                                                     # fluidRow(tags$br()),
+                                                     # fluidRow(tags$div(id = "box_tree_plot2")),
+                                                     # splitLayout(cellWidths = c("33%", "33%", "33%"), 
+                                                     #             tags$div(id = "download_tree2"),
+                                                     #             tags$div(id = "download_newick2"),
+                                                     #             tags$div(id = "download_tree_seqs2"))
+                                            ),
+                                            tabPanel("Stadistical Analysis",
+                                                     fluidRow(tags$br()),
+                                                     div("This tab allows for an interactive visualization of the previous tree. 
+                                               In particular, in situations where gene duplications have given rise 
+                                               to several clades and you want to reduce the tree not in relation to 
+                                               the species that appear, but to these clades, this visualization allows 
+                                               the collapse of subtrees and the simple exploration of the areas of interest. 
+                                               Press Show Collapsable Tree to show the tree."),
+                                                     # fluidRow(tags$br()),
+                                                     # shinyWidgets::actionBttn("phylo_start2", "Show Collapsable Tree",
+                                                     #                          size = "sm", icon = icon("magnifying-glass"),
+                                                     #                          style = "float", color = "success"),
+                                                     # fluidRow(tags$br()),
+                                                     # tags$div(id = "box_phylo2"),
+                                                     # fluidRow(tags$br())
+                                            )
+                                )
+                              
+                            ))) 
                             
                             
-                            )
+                            ),
+                    
+                    ## Coexpression Network tab
+                    tabItem(tabName = "coexpression",
+                            h2(""),
+                            fluidRow(valueBox("Gene Network",
+                                              subtitle = "Build your own gene coexpression network",
+                                              icon = icon("circle-nodes",class = "fa-solid fa-circle-nodes",
+                                                          lib ="font-awesome" ), width = 6, color = "lime")),
+                            br()
+                            ),
+                    
+                    ## Predictive model tab
+                    tabItem(tabName = "predictive",
+                            h2(""),
+                            fluidRow(valueBox("Predictive model",
+                                              subtitle = "Tune your own predictive model",
+                                              icon = icon("buromobelexperte",class="fa-brands fa-buromobelexperte",
+                                                          lib ="font-awesome"), width = 6, color = "purple")),
+                            br()),
+                    
+                    ##Contact and info
+                    tabItem(tabName = "contact_tutorial", 
+                            
+                            h2(""),
+                            fluidRow(valueBox("Contact and Info", 
+                                              subtitle = "Acknowledgments and other information",
+                                              icon = icon("envelope"), width = 6, color = "teal")),
+                            br(),
+                            tags$div(align="justify",style = 'font-size: 16px; margin-left: 20px; margin-right:20px; ',tags$b("Authors:"), "Emma Serrano Pérez,
+                                     Mercedes García González and Francisco José Romero Campero."),
+                            tags$br(),
+                            
+                            tags$div(align="justify",style = 'font-size: 16px; margin-left: 20px; margin-right:20px;',"We are strongly committed to open
+                            access software and open science. NERITES's source code is available
+                       at GitHub following the lateral panel link and is released under a GNU General Public License v3.0. If you 
+                       experience any problem using NERITES, please create an issue in GitHub and we will address it. For other
+                       inquiries, send an email to eserrano3@us.es."))
                     
                     
                     )))
