@@ -5,6 +5,144 @@
 library(shiny)
 library(shinydashboard)
 library(dashboardthemes)
+library(DT)
+
+
+## Auxiliar functions
+
+plot.rhythm <- function(gene.id, gene.name, genes.expression, photoperiod_sel, nitrate_sel)
+{
+  # Initiate
+  current.gene.expression.hnld <- 0
+  current.gene.expression.hnsd <- 0
+  current.gene.expression.lnld <- 0
+  current.gene.expression.lnsd <- 0
+  
+  # Condition expression
+  hnld.zt <- paste("HNLD",paste0("zt",sprintf(fmt = "%02d",seq(from=0,to=20,by=4))),sep="_")
+  current.gene.expression.hnld <- genes.expression[gene.id,c(paste(hnld.zt,1,sep="_"),
+                                                             paste(hnld.zt,2,sep="_"), paste(hnld.zt,3,sep="_"))]
+  
+  hnsd.zt <- paste("HNSD",paste0("zt",sprintf(fmt = "%02d",seq(from=0,to=20,by=4))),sep="_")
+  current.gene.expression.hnsd <- genes.expression[gene.id,c(paste(hnsd.zt,1,sep="_"),
+                                                             paste(hnsd.zt,2,sep="_"), paste(hnsd.zt,3,sep="_"))]
+  
+  lnld.zt <- paste("LNLD",paste0("zt",sprintf(fmt = "%02d",seq(from=0,to=20,by=4))),sep="_")
+  current.gene.expression.lnld <- genes.expression[gene.id,c(paste(lnld.zt,1,sep="_"),
+                                                             paste(lnld.zt,2,sep="_"), paste(lnld.zt,3,sep="_"))]
+  
+  lnsd.zt <- paste("LNSD",paste0("zt",sprintf(fmt = "%02d",seq(from=0,to=20,by=4))),sep="_")
+  current.gene.expression.lnsd <- genes.expression[gene.id,c(paste(lnsd.zt,1,sep="_"),
+                                                             paste(lnsd.zt,2,sep="_"), paste(lnsd.zt,3,sep="_"))]
+  
+  # Max o Min
+  max.expr <- max(as.numeric(c(current.gene.expression.hnld, current.gene.expression.hnsd,
+                               current.gene.expression.lnld, current.gene.expression.lnsd)))
+  min.expr <- min(as.numeric(c(current.gene.expression.hnld, current.gene.expression.hnsd,
+                               current.gene.expression.lnld, current.gene.expression.lnsd)))
+  
+  # Plot basic
+  plot(x = -10,y= -10,axes=F,xlab="",ylab="FPKM",
+       ylim=c((min.expr-(max.expr- min.expr)/5), max.expr),xlim=c(0,72),
+       main=paste(gene.id, gene.name,sep=" - "),cex.main=2)
+  axis(side=2,lwd=3)
+  zt.points<-paste0("zt",sprintf(fmt = "%02d",seq(from=0,to=20,by=4)),sep="_")
+  zt.points.rep<-c(paste(zt.points,1,sep=""),paste(zt.points,2,sep=""), paste(zt.points,3,sep=""))
+  axis(side = 1,lwd = 3, at=seq(from=0,to=68,by=4),labels = zt.points.rep,las=2)
+  
+  # Conditions lines
+  if( photoperiod_sel == "Long Day (LD)" && nitrate_sel == "Control (HN)" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.hnld,type="o",lwd=3,col="blue")
+  }
+  else if( photoperiod_sel == "Short Day (SD)" && nitrate_sel == "Control (HN)" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.hnsd,type="o",lwd=3,col="red")
+  }
+  else if( photoperiod_sel == "Long Day (LD)" && nitrate_sel == "Low Nitrate (LN)" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.lnld,type="o",lwd=3,col="green")
+  }
+  else if( photoperiod_sel == "Short Day (LD)" && nitrate_sel == "Low Nitrate (LN)" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.lnsd,type="o",lwd=3,col="yellow")
+  }
+  else if( photoperiod_sel == "Both" && nitrate_sel == "Control (HN)" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.hnld,type="o",lwd=3,col="blue")
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.hnsd,type="o",lwd=3,col="red")
+  }
+  else if( photoperiod_sel == "Both" && nitrate_sel == "Low Nitrate (LN)" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.lnld,type="o",lwd=3,col="green")
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.lnsd,type="o",lwd=3,col="yellow")
+  }
+  else if( photoperiod_sel == "Long Day (LD)" && nitrate_sel == "Both" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.hnld,type="o",lwd=3,col="blue")
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.lnld,type="o",lwd=3,col="green")
+  }
+  else if( photoperiod_sel == "Short Day (SD)" && nitrate_sel == "Both" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.hnsd,type="o",lwd=3,col="red")
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.lnsd,type="o",lwd=3,col="yellow")
+  }
+  else if( photoperiod_sel == "Both" && nitrate_sel == "Both" )
+  {
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.hnld,type="o",lwd=3,col="blue")
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.hnsd,type="o",lwd=3,col="red")
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.lnld,type="o",lwd=3,col="green")
+    lines(x = seq(from=0,by=4,to=68),current.gene.expression.lnsd,type="o",lwd=3,col="yellow")
+  }
+  
+  
+  
+  # Adding lines
+  for(i in 0:2)
+  {
+    current.line <- (max.expr- min.expr)/20
+    
+    if(photoperiod_sel == "Long Day (LD)")
+    {
+      polygon(x = c(24*i, 24*i+16, 24*i+16, 24*i),
+              y=c(min.expr-current.line, min.expr-current.line, min.expr-(3/2*current.line), min.expr-(3/2*current.line)),
+              lwd=2,border="blue")
+      polygon(x = c(24*i+16,24*(i+1),24*(i+1),24*i+16),
+              y=c(min.expr-current.line, min.expr-current.line, min.expr-(3/2*current.line), min.expr-(3/2*current.line)),
+              lwd=2,border="blue",col="blue")
+      current.line <- 2*current.line
+    }
+    else if(photoperiod_sel == "Short Day (SD)")
+    {
+      polygon(x = c(24*i, 24*i+8, 24*i+8, 24*i),
+              y=c(min.expr-current.line, min.expr-current.line, min.expr-(current.line+(max.expr- min.expr)/40),
+                  min.expr-(current.line+(max.expr- min.expr)/40)), lwd=2,border="red")
+      polygon(x = c(24*i+8,24*(i+1),24*(i+1),24*i+8),
+              y=c(min.expr-current.line, min.expr-current.line, min.expr-(current.line+(max.expr- min.expr)/40),
+                  min.expr-(current.line+(max.expr- min.expr)/40)), lwd=2,border="red",col="red")
+    }
+    else
+    {
+      polygon(x = c(24*i, 24*i+16, 24*i+16, 24*i),
+              y=c(min.expr-current.line, min.expr-current.line, min.expr-(3/2*current.line), min.expr-(3/2*current.line)),
+              lwd=2,border="blue")
+      polygon(x = c(24*i+16,24*(i+1),24*(i+1),24*i+16),
+              y=c(min.expr-current.line, min.expr-current.line, min.expr-(3/2*current.line), min.expr-(3/2*current.line)),
+              lwd=2,border="blue",col="blue")
+      current.line <- 2*current.line
+      
+      polygon(x = c(24*i, 24*i+8, 24*i+8, 24*i),
+              y=c(min.expr-current.line, min.expr-current.line, min.expr-(current.line+(max.expr- min.expr)/40),
+                  min.expr-(current.line+(max.expr- min.expr)/40)), lwd=2,border="red")
+      polygon(x = c(24*i+8,24*(i+1),24*(i+1),24*i+8),
+              y=c(min.expr-current.line, min.expr-current.line, min.expr-(current.line+(max.expr- min.expr)/40),
+                  min.expr-(current.line+(max.expr- min.expr)/40)), lwd=2,border="red",col="red")
+    }
+    
+  }
+  
+  return(0)  
+}
 
 
 
@@ -54,7 +192,8 @@ ui <- dashboardPage(
                             tags$br(),
                             fluidRow(column(9,
                                             tags$div(span(tags$b("NERITES"),": bla bla bla",
-                                                          style = 'color: #1f618d; font-weight: 540; font-size: 42px; font-family: "Alatsi"", Verdana, sans-serif;')),
+                                                          style = 'color: #1f618d; font-weight: 540; font-size: 42px; font-family: "Alatsi"",
+                                                          Verdana, sans-serif;')),
                                             style = "margin-top: 45px; margin-left: 35px;",
                             # column(2,
                             #        img(
@@ -102,14 +241,17 @@ ui <- dashboardPage(
                                      fluidRow(tags$br()),
                                      tags$div(align="justify", style = 'font-size: 16px; margin-left: 30px;',
                                               tags$ol(
-                                                tags$li(tags$b("Explore rhythmicity"), ". To explore how rhythmicity changes along the day if",tags$em("R. supcapitata"),
-                                                        "is under nitrate deficiency."),
+                                                tags$li(tags$b("Explore rhythmicity"), ". Enables the user to explore how rhythmic genes are affected by
+                                                        the photoperiod and abiotic stress (nitrate deficiency in the medium) to which",tags$em("R. supcapitata"),
+                                                        "is subjected."),
                                                 tags$br(),
-                                                tags$li(tags$b("Gene Coexpression Network"),". To explore how the gene coexpression network of",tags$em("R. supcapitata"),
-                                                        "is build."),
+                                                tags$li(tags$b("Gene Coexpression Network"),". If desired, the user can browse the",tags$em("R. supcapitata"),
+                                                        "co-expression network generated from multiple conditions (nitrate availability, photoperiod and daytime)
+                                                        to determine potentially important connections between genes."),
                                                 tags$br(),
-                                                tags$li(tags$b("Predictive model"),". We have our own predictive model that you can tune to optimize the data according
-                                                        to your objetives."),
+                                                tags$li(tags$b("Predictive model"),". To determine whether there is indeed a direct relationship between genes,
+                                                        a predictive model has been made available that shows the most notable connections between particular
+                                                        genes. Several parameters of the model can be tuned by the user on demand."),
                                               )
                                      ),
                                      
@@ -184,8 +326,19 @@ ui <- dashboardPage(
                                 shinyWidgets::awesomeRadio(
                                   inputId = "photoperiod_1",
                                   label = "", 
-                                  choices = c("Long Day (LD)", "Short Day (SD)"),
+                                  choices = c("Long Day (LD)", "Short Day (SD)","Both"),
                                   selected = "Long Day (LD)",
+                                  inline = TRUE, 
+                                  status = "info"
+                                ),
+                                br(),
+                                span(tags$b("Nitrate availability"), style = "color:#34c5d1; font-size: 16px; "),
+                                div(br(),"Please select the desired nitrate condition from the following list for performing the analysis:",br()),
+                                shinyWidgets::awesomeRadio(
+                                  inputId = "nitrate_1",
+                                  label = "", 
+                                  choices = c("Control (HN)", "Low Nitrate (LN)","Both"),
+                                  selected = "Control (HN)",
                                   inline = TRUE, 
                                   status = "info"
                                 ),
@@ -195,10 +348,12 @@ ui <- dashboardPage(
                              wish to analyze."),
                                 fluidRow(
                                   column(5, textInput("geneInt1", label = "", 
-                                                      width = "100%", placeholder = "R.sub gene")),
+                                                      width = "100%", placeholder = "Rsub_00001")),
                                   column(2, div( style = "margin-top: 21px;", 
                                                  shinyWidgets::actionBttn("run_button2", "Let's go", size = "sm", icon = icon("magnifying-glass"),
                                                                           style = "float", color = "primary")))),
+                                shinyjs::useShinyjs(),
+                                shinyjs::hidden(div(id='loading.graph',h3('Please be patient, building graph ...')))
                                 
                             ),
                             br(),
@@ -209,46 +364,28 @@ ui <- dashboardPage(
                       button"),"within each of the tabs, with specific instructions for each analysis.",
                                 div(br()),
                                 tabsetPanel(type = "tabs",
-                                            tabPanel("Graphical Representation", 
+                                            tabPanel("Gene Representation", 
                                                      fluidRow(br()),
-                                                     div("This tab shows four different results. First of all, a table with up to 5 best 
-                                         matches for the query sequence in the chosen proteome, with decreasing confidence. First row
-                                         corresponds to best match, which is used to perform subsequent analysis. If you are interested
-                                         in another one, please copy de ID and paste it in Gene ID-based search tab. Secondly, a complete list of the genes
-                                         that are assigned to the same orthogroup as the query. Next, the proportion of  genes of each species. 
-                                         Finally, a gene tree show the evolutionary relationships between those genes. All results can be downloaded 
-                                         using the buttons at the bottom of the page."),
+                                                     div("This tab shows two results. First of all you can see how your gene adapt
+                                                         along the day in every condition by a graphical representation. In other instance,
+                                                         you can see if your gene is rhythmic or not according to a non-parametric test (RAIN)."),
                                                      fluidRow(br()),
+                                                     fluidRow(column(6,align="center",
+                                                                     tags$div(id = "box_rhythm")),
+                                                              column(5,br(),
+                                                               span(tags$div(id = "box_rhythm_table"),style = "color:black;
+                                                                            font-size: 16px;",align = "center"))),
+                 
                                                      
-                                                     # shinyjs::useShinyjs(),
-                                                     # shinyjs::hidden(div(id='loading.tree2',h3('Please be patient, building graph ...'))),
-                                                     # uiOutput(outputId = "error_tree2"),
-                                                     # fluidRow(tags$div(id = "box_tree_seq_table2")),
-                                                     # fluidRow(tags$br()),
-                                                     # splitLayout(cellWidths = c("50%", "50%"),
-                                                     #             tags$div(id = "box_tree_text2"), tags$div(id = "box_tree_pie2")),
-                                                     # fluidRow(tags$br()),
-                                                     # fluidRow(tags$div(id = "box_tree_plot2")),
-                                                     # splitLayout(cellWidths = c("33%", "33%", "33%"), 
-                                                     #             tags$div(id = "download_tree2"),
-                                                     #             tags$div(id = "download_newick2"),
-                                                     #             tags$div(id = "download_tree_seqs2"))
                                             ),
-                                            tabPanel("Stadistical Analysis",
+                                            tabPanel("Statistical Analysis",
                                                      fluidRow(tags$br()),
-                                                     div("This tab allows for an interactive visualization of the previous tree. 
-                                               In particular, in situations where gene duplications have given rise 
-                                               to several clades and you want to reduce the tree not in relation to 
-                                               the species that appear, but to these clades, this visualization allows 
-                                               the collapse of subtrees and the simple exploration of the areas of interest. 
-                                               Press Show Collapsable Tree to show the tree."),
-                                                     # fluidRow(tags$br()),
-                                                     # shinyWidgets::actionBttn("phylo_start2", "Show Collapsable Tree",
-                                                     #                          size = "sm", icon = icon("magnifying-glass"),
-                                                     #                          style = "float", color = "success"),
-                                                     # fluidRow(tags$br()),
-                                                     # tags$div(id = "box_phylo2"),
-                                                     # fluidRow(tags$br())
+                                                     div("Finally, this tab shows several measurements (mesor, phase and amplitude)
+                                                         for your gene in each condition"),
+                                                     fluidRow(tags$br()),
+                                                     fluidRow(column(12,align="center",
+                                                                     span(tags$div(id = "box_circa_table")))),
+                                                     
                                             )
                                 )
                               
@@ -264,7 +401,16 @@ ui <- dashboardPage(
                                               subtitle = "Build your own gene coexpression network",
                                               icon = icon("circle-nodes",class = "fa-solid fa-circle-nodes",
                                                           lib ="font-awesome" ), width = 6, color = "lime")),
-                            br()
+                            br(),
+                            fluidRow(column(11,tags$div(align="justify", style = 'font-size: 16px;',
+                                                        tags$b("NERITES"), "allows researchers to explore the expression profiles of 
+                                      individual genes in",tags$b(tags$i("Raphidocelis subcapitata")), " and analyse their rhythmicity. 
+                                      This data has been generated in our lab over three complete diurnal cycles under", 
+                                                        tags$b("long day (summer day, 16h light / 8h dark) and short day (winter day, 8h light / 16h dark)"), 
+                                                        "conditions. In this app, users can visualize gene expression profiles of their
+                             interest, compare their patterns under short day and long day conditions. Users can also
+                             perform" , tags$b("statistical analysis"),  "over the rhythmicity of gene expression profiles.", " See our", tags$b("video tutorial"),
+                                                        "for details or follow the next steps to perform your analysis")))
                             ),
                     
                     ## Predictive model tab
@@ -305,17 +451,143 @@ ui <- dashboardPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  # Initiation UI
+  box_rhythm_exits <<- F
+  box_rhythm_table_exits <<-F
+  box_circa_table_exits <<- F
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+  ## Rhythm exploration
+  
+  genes.expression <- read.table("data/gene_expression_matrix_fixed")
+  gene_names <- read.table("data/complete_fun_anno_raphi.csv")
+  rhythm_genes_hnld <- read.table("data/hnld.rhytmic.table.tsv")[,1]
+  rhythm_genes_hnsd <- read.table("data/hnsd.rhytmic.table.tsv")[,1]
+  rhythm_genes_lnld <- read.table("data/lnld.rhytmic.table.tsv")[,1]
+  rhythm_genes_lnsd <- read.table("data/lnsd.rhytmic.table.tsv")[,1]
+  circa_params <- read.table("data/circa_parameters.tsv")
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
+  
+  
+  observeEvent(input$run_button2,{
+    
+    shinyjs::showElement(id = 'loading.graph')
+    
+    # Plot rhythm
+    gene.id <- input$geneInt1
+    gene.name <- subset(gene_names[1,], gene.id %in% gene_names[,1])[,2]
+    photoperiod_sel <- input$photoperiod_1
+    nitrate_sel <- input$nitrate_1
+    
+    if(box_rhythm_exits)
+    {
+      removeUI(
+        selector = "div:has(>>> #plot_rhythm)",
+        multiple = TRUE,
+        immediate = TRUE
+      )
+      box_rhythm_exits <<- F
+    }
+    
+    insertUI("#box_rhythm", "afterEnd", ui = {
+      box(width = 12,
+          title = "Graphical Representation", status = "primary", solidHeader = TRUE,
+          collapsible = TRUE,
+          plotOutput("plot_rhythm"))
     })
+    
+    box_rhythm_exits <<- T
+    
+    output$plot_rhythm <- renderPlot(plot.rhythm(gene.id = gene.id, gene.name = gene.name,
+                                                 genes.expression = genes.expression, photoperiod_sel = photoperiod_sel,
+                                                 nitrate_sel = nitrate_sel))
+    
+    # Rhythm table
+    Conditions <- c("HNLD","HNSD","LNLD","LNSD")
+    Rhythmicity <- c("...","...","...","...")
+    rhythm_table <- data.frame(Conditions,Rhythmicity)
+    
+    if(gene.id %in% rhythm_genes_hnld)
+    {
+      rhythm_table[1,2] <- "Rhythmic gene"
+    }
+    else{
+      rhythm_table[1,2] <- "Non-hythmic gene"
+    }
+    
+    if(gene.id %in% rhythm_genes_hnsd)
+    {
+      rhythm_table[2,2] <- "Rhythmic gene"
+    }
+    else{
+      rhythm_table[2,2] <- "Non-hythmic gene"
+    }
+    
+    if(gene.id %in% rhythm_genes_lnld)
+    {
+      rhythm_table[3,2] <- "Rhythmic gene"
+    }
+    else{
+      rhythm_table[3,2] <- "Non-hythmic gene"
+    }
+    
+    if(gene.id %in% rhythm_genes_lnsd)
+    {
+      rhythm_table[4,2] <- "Rhythmic gene"
+    }
+    else{
+      rhythm_table[4,2] <- "Non-hythmic gene"
+    }
+    
+    if(box_rhythm_table_exits)
+    {
+      removeUI(
+        selector = "div:has(>>> #rhythm_gene)",
+        multiple = TRUE,
+        immediate = TRUE
+      )
+      box_rhythm_table_exits <<- F
+    }
+    
+    insertUI("#box_rhythm_table", "afterEnd", ui = {
+      box(width = 12,
+          title = "Rhythmicity", status = "primary", solidHeader = TRUE,
+          collapsible = TRUE,
+          DTOutput("rhythm_gene"))
+    })
+    
+    box_rhythm_table_exits <<- T
+    
+    output$rhythm_gene <- DT::renderDT(rhythm_table)
+    
+    shinyjs::hideElement(id='loading.graph')
+    
+    
+    # Statistical Analysis 
+    if(box_circa_table_exits)
+    {
+      removeUI(
+        selector = "div:has(>>> #circa_table)",
+        multiple = TRUE,
+        immediate = TRUE
+      )
+      box_circa_table_exits <<- F
+    }
+    
+    insertUI("#box_circa_table", "afterEnd", ui = {
+      box(width = 12,
+          title = "Parametric Results", status = "primary", solidHeader = TRUE,
+          collapsible = TRUE,
+          tags$div(DTOutput("circa_table")))
+          
+    })
+    
+    box_circa_table_exits <<- T
+    
+    output$circa_table <- DT::renderDT(DT::datatable(circa_params[gene.id, ],
+                                                     options = list(scrollX = T)))
+    
+  })
 }
 
 # Run the application 
