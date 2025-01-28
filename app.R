@@ -403,14 +403,69 @@ ui <- dashboardPage(
                                                           lib ="font-awesome" ), width = 6, color = "lime")),
                             br(),
                             fluidRow(column(11,tags$div(align="justify", style = 'font-size: 16px;',
-                                                        tags$b("NERITES"), "allows researchers to explore the expression profiles of 
-                                      individual genes in",tags$b(tags$i("Raphidocelis subcapitata")), " and analyse their rhythmicity. 
-                                      This data has been generated in our lab over three complete diurnal cycles under", 
-                                                        tags$b("long day (summer day, 16h light / 8h dark) and short day (winter day, 8h light / 16h dark)"), 
-                                                        "conditions. In this app, users can visualize gene expression profiles of their
-                             interest, compare their patterns under short day and long day conditions. Users can also
-                             perform" , tags$b("statistical analysis"),  "over the rhythmicity of gene expression profiles.", " See our", tags$b("video tutorial"),
-                                                        "for details or follow the next steps to perform your analysis")))
+                                                        "The aim of this section is to facilitate the studies over the",tags$b(tags$i("Raphidocelis subcapitata")),
+                                                        "transcriptome. A user can search for a set of genes of interest using the ",
+                                                        tags$b("Gene Selection panel. "),"After selecting the gene you can watch his position in the network
+                                                        and select how many neighbours do you want to explore by using the",
+                                                        tags$b("Select Co-expressed Genes panel.")),
+                                            br(),
+                                            box(title = span(tags$b("Gene Selection:"), style = "color:#34c5d1; font-size: 16px; "), status = "info", width = "250",
+                                                "Please select an individual gene or a gene list to explore:", br(),
+                                                
+                                                shinyWidgets::awesomeRadio(
+                                                  inputId = "gene_number",
+                                                  label = "", 
+                                                  choices = c("Single Gene", "List of Genes"),
+                                                  selected = "Single Gene",
+                                                  inline = TRUE, 
+                                                  status = "info"
+                                                ),
+                                                conditionalPanel(condition = "input.gene_number == 'Single Gene'",
+                                                                 ## Select gene ID
+                                                                 fluidRow(column(2,selectizeInput(inputId = "selected.gene",
+                                                                                                  label = "Gene ID",
+                                                                                                  choices = "pruebas",
+                                                                                                  selected = "Rsub_00001",
+                                                                                                  multiple = FALSE,
+                                                                                                  width = 200)),
+                                                                 ## Select Neighbours
+                                                                          column(2,selectInput(inputId = "distance", 
+                                                                                               label = "Select Neighbours:", 
+                                                                                               choices = 0:3,
+                                                                                               selected = 0,
+                                                                                               multiple = FALSE,
+                                                                                               width = 200)),
+                                                                 ## Final button
+                                                                          column(2, br(),shinyWidgets::actionBttn("button_gene_id", "Let's go",
+                                                                                   size = "sm", icon = icon("magnifying-glass"),
+                                                                                   style = "float", color = "primary")))),
+                                                conditionalPanel(condition = "input.gene_number == 'List of Genes'",
+                                                                 ## Select gene list
+                                                                 fluidRow(column(2,textAreaInput(inputId = "gene.list", label= "Set of genes", width="90%",
+                                                                                                 height = "120px",placeholder = "Insert set of genes",
+                                                                                                 value = "Rsub_00001 \t Rsub_00002 \t Rsub_00003")),
+                                                                ## Select Neighbours
+                                                                          column(2,selectInput(inputId = "distance_list", 
+                                                                                               label = "Select Neighbours:", 
+                                                                                               choices = 0:3,
+                                                                                               selected = 0,
+                                                                                               multiple = FALSE,
+                                                                                               width = 200)),
+                                                                ## Final Button
+                                                                          column(2, br(),shinyWidgets::actionBttn("button_gene_list", "Let's go",
+                                                                                                                  size = "sm", icon = icon("magnifying-glass"),
+                                                                                                                  style = "float", color = "primary")))),
+                                                ),
+                                            br(),
+                                            box(status = "info",  width = "500",
+                                                title = span(tags$b("Results"), style = "color:#34c5d1; font-size: 16px; "),
+                                                " The",tags$b(tags$i("Raphidocelis subcapitata"))," transcriptome network are 
+                                                displayed below. The execution of the", tags$b("Start button"),"enable the
+                                                visualization of the selected genes and their neighbours in the network.",
+                                                div(br()),
+                                                fluidRow(column(12,align="center",
+                                                                tags$div(id = "box_network"))))
+                                            ))
                             ),
                     
                     ## Predictive model tab
@@ -456,6 +511,7 @@ server <- function(input, output) {
   box_rhythm_exits <<- F
   box_rhythm_table_exits <<-F
   box_circa_table_exits <<- F
+  box_network_exits <<- F
 
   ## Rhythm exploration
   
@@ -586,6 +642,14 @@ server <- function(input, output) {
     
     output$circa_table <- DT::renderDT(DT::datatable(circa_params[gene.id, ],
                                                      options = list(scrollX = T)))
+    
+  })
+  
+  ## Network visualization
+  observeEvent(input$button_gene_id,{
+    shinyjs::showElement(id = 'loading.graph')
+    
+    
     
   })
 }
