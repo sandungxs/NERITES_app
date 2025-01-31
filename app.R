@@ -190,8 +190,9 @@ ui <- dashboardPage(
                 tabItems(
                     tabItem(tabName = "home",
                             tags$br(),
-                            fluidRow(column(9,
-                                            tags$div(span(tags$b("NERITES"),": bla bla bla",
+                            fluidRow(column(12,
+                                            tags$div(span(tags$b("NERITES"),": Nitrate availability Effect over RhythmIc
+                                                          diel TranscriptomEs in raphidocelis Subcapitata",
                                                           style = 'color: #1f618d; font-weight: 540; font-size: 42px; font-family: "Alatsi"",
                                                           Verdana, sans-serif;')),
                                             style = "margin-top: 45px; margin-left: 35px;",
@@ -213,8 +214,8 @@ ui <- dashboardPage(
                                      tags$div(align="justify", "Welcome to",tags$b("NERITES"), "the web application
                                               that allows you to easily and autonomously explore the response of",
                                               tags$em("Raphidocelis subcapitata"),"to nitrate stress in the medium over time,
-                                              both short and long day. A tutorial can be found at the following link.",
-                                              style = 'font-size: 16px; margin-left: 20px;'
+                                              both short and long day.",
+                                              style = 'font-size: 16px; margin-left: 60px;'
 
                                      ),
                                      fluidRow(tags$br()),
@@ -224,12 +225,12 @@ ui <- dashboardPage(
                                        # Home Boxes
                                        column(12,style= 'margin-left: 40px;',
                                               valueBox(a("Rhythmicity", href="#shiny-tab-rhythm", "data-toggle" = "tab", "style" = "color:white"),
-                                                       "Explore how rhythmicity changes under stress",
+                                                       "Explore rhythmicity changes under stress",
                                                        icon = icon("wave-square",class = "fa-solid fa-wave-square",
                                                                    lib ="font-awesome" ), width = 4),
                                               
                                               valueBox(a("Gene Network", href="#shiny-tab-coexpression", "data-toggle" = "tab", "style" = "color:white"),
-                                                       "Build your own gene coexpression network",
+                                                       "Find interesting coexpression patterns",
                                                        icon = icon("circle-nodes",class = "fa-solid fa-circle-nodes",
                                                                    lib ="font-awesome" ), width = 4, color = "lime"),
                                               
@@ -260,37 +261,33 @@ ui <- dashboardPage(
                                      fluidRow(hr(style = 'margin-left: 80px;'),br()),
                                      fluidRow(
                                        column(4,
-                                              tags$div(style = "margin-left: 20px;",
+                                              tags$div(style = "margin-left: 60px;",
                                                        img(
                                                          src = "rafi.jpg",
                                                          alt = "rafi",
-                                                         width = 450,
-                                                         height = 300, style="display: block; margin-left: 20px; margin-right: auto;"
+                                                         width = 350,
+                                                         height = 200, style="display: block; margin-left: 60px; margin-right: auto;"
                                                        )
                                               )
                                        ),
                                        column(8, 
                                               tags$div(align="justify", style = 'font-size: 16px; margin-left: 140px;',  br(), br(),
-                                                       "The exploration of orthology is based on the construction of orthogroups, sets of genes that descend from a 
-                         single gene in the common ancestor of the species under study. In this way, it is possible to trace the evolutionary 
-                         history of these genes and to analyze the changes that the orthogroup has undergone from its appearance to 
-                         its current situation in the extant species.", br(), br(), "Regarding the species supported by the tool, two different models are offered. 
-                         The default model focuses on 36 species of the ", tags$b("Viridiplantae"), " clade, with representatives of the 
-                         Chlorophyta and Streptophyta clades chosen to span the evolutionary set of these groups.",
+                                                       "The freshwater ",tags$em("Cholorophyta")," unicellular microalga",tags$em("Raphidocelis
+                                                        supcapitata"),"(formerly known as ",tags$em("Selenastrum capricornutum")," and
+                                                       ",tags$em("Pseudokirchneriella subcapitata")," ) was originally harvested
+                                                       and isolated from the Nitelva River (Akershus, Norway) in 1959. (NORCCA 2023a).
+                                                       Its presence has been widely reported, all over the world. It is characterised by a
+                                                       crescent-shaped morphology with a dense cell wall and a single large chloroplast that
+                                                       occupies almost the entire interior of the cell.",
                                                        br(), br(),br(),
                                               column(1))),
                                      fluidRow(br()),
                                      fluidRow(column(12,
                                               tags$div(align= "justify", style = 'font-size: 16px; margin-left: 35px;', br(),
-                                                       "Furthermore, an additional ", tags$b("Global"), " model includes species from the whole Archaeplastida clade, 
-                         as well as examples of Stramenopiles and Cryptophytes. Note that although both models contain the green lineage,
-                         their results may vary because the common ancestors of the groups are very distant in time,
-                         so for a more accurate analysis it is recommended to use the Viridiplantae model, while for a more 
-                         generalist one the Global model should yield more information.", br(), br(), "After the construction of 
-                         the tree, PharaohFUN allows the exploration of the proteins encoded by the orthogroup genes, implementing 
-                         modules for interactive tree viewing, PFAM module determination, multiple sequence alignment, Gene Ontology 
-                         terms annotation, KEGG pathways annotation, exploration of physical interactions between proteins 
-                         and scientific literature annotation.")),
+                                                       "This microalga began to be used as a marker of toxicity in fresh waters as it is very
+                                                       sensitive to many types of pollutants. However, in recent years, a potential biotechnological
+                                                       application of this micro-organism as a fixer of atmospheric CO2 and as a means of
+                                                       producing high-value compounds and biofuels has been seen.")),
                                                        
                                                        ),
                                        
@@ -463,6 +460,7 @@ ui <- dashboardPage(
                                                 displayed below. The execution of the", tags$b("Start button"),"enable the
                                                 visualization of the selected genes and their neighbours in the network.",
                                                 div(br()),
+                                                div(tags$img(src = 'work-in-progress.png',title= "work", height ="400px"), align= "center"),
                                                 fluidRow(column(12,align="center",
                                                                 tags$div(id = "box_network"))))
                                             ))
@@ -475,7 +473,10 @@ ui <- dashboardPage(
                                               subtitle = "Tune your own predictive model",
                                               icon = icon("buromobelexperte",class="fa-brands fa-buromobelexperte",
                                                           lib ="font-awesome"), width = 6, color = "purple")),
-                            br()),
+                            br(),br(),br(),
+                            div(tags$img(src = 'work-in-progress.png',title= "work", height ="400px"), align= "center")
+                            
+                            ),
                     
                     ##Contact and info
                     tabItem(tabName = "contact_tutorial", 
@@ -493,7 +494,12 @@ ui <- dashboardPage(
                             access software and open science. NERITES's source code is available
                        at GitHub following the lateral panel link and is released under a GNU General Public License v3.0. If you 
                        experience any problem using NERITES, please create an issue in GitHub and we will address it. For other
-                       inquiries, send an email to eserrano3@us.es."))
+                       inquiries, send an email to eserrano3@us.es."),
+                            
+                            tags$br(),
+                            tags$div(align="justify",style = 'font-size: 16px; margin-left: 20px; margin-right:20px;',"The architecture of this web
+                                     application was developed following the model established in our research group by PhD student Marcos Ramos González.")
+                            )
                     
                     
                     )))
