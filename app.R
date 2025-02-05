@@ -6,10 +6,10 @@ library(shiny)
 library(shinydashboard)
 library(dashboardthemes)
 library(DT)
+library(ggplot2)
 
 
 ## Auxiliar functions
-
 plot.rhythm <- function(gene.id, gene.name, genes.expression, photoperiod_sel, nitrate_sel)
 {
   # Initiate
@@ -143,6 +143,19 @@ plot.rhythm <- function(gene.id, gene.name, genes.expression, photoperiod_sel, n
   
   return(0)  
 }
+
+
+##Load the network data
+network.data <- read.table(file="data/nerites_network.tsv",header = TRUE,as.is=TRUE,sep="\t",quote = "",comment.char = "%",check.names=F)
+rownames(network.data) <- network.data$names
+
+
+
+## Usefull data
+
+
+
+
 
 
 
@@ -402,65 +415,29 @@ ui <- dashboardPage(
                             fluidRow(column(11,tags$div(align="justify", style = 'font-size: 16px;',
                                                         "The aim of this section is to facilitate the studies over the",tags$b(tags$i("Raphidocelis subcapitata")),
                                                         "transcriptome. A user can search for a set of genes of interest using the ",
-                                                        tags$b("Gene Selection panel. "),"After selecting the gene you can watch his position in the network
-                                                        and select how many neighbours do you want to explore by using the",
-                                                        tags$b("Select Co-expressed Genes panel.")),
+                                                        tags$b("Module Selection panel. "),"After selecting the module you could watch his position in the network
+                                                        and explore their correlation with several fisiological effects."),
                                             br(),
-                                            box(title = span(tags$b("Gene Selection:"), style = "color:#34c5d1; font-size: 16px; "), status = "info", width = "250",
-                                                "Please select an individual gene or a gene list to explore:", br(),
+                                            box(title = span(tags$b("Module Selection:"), style = "color:#34c5d1; font-size: 16px; "), status = "info", width = "250",
                                                 
-                                                shinyWidgets::awesomeRadio(
-                                                  inputId = "gene_number",
-                                                  label = "", 
-                                                  choices = c("Single Gene", "List of Genes"),
-                                                  selected = "Single Gene",
-                                                  inline = TRUE, 
-                                                  status = "info"
-                                                ),
-                                                conditionalPanel(condition = "input.gene_number == 'Single Gene'",
-                                                                 ## Select gene ID
-                                                                 fluidRow(column(2,selectizeInput(inputId = "selected.gene",
-                                                                                                  label = "Gene ID",
-                                                                                                  choices = "pruebas",
-                                                                                                  selected = "Rsub_00001",
-                                                                                                  multiple = FALSE,
-                                                                                                  width = 200)),
-                                                                 ## Select Neighbours
-                                                                          column(2,selectInput(inputId = "distance", 
-                                                                                               label = "Select Neighbours:", 
-                                                                                               choices = 0:3,
-                                                                                               selected = 0,
-                                                                                               multiple = FALSE,
-                                                                                               width = 200)),
-                                                                 ## Final button
-                                                                          column(2, br(),shinyWidgets::actionBttn("button_gene_id", "Let's go",
-                                                                                   size = "sm", icon = icon("magnifying-glass"),
-                                                                                   style = "float", color = "primary")))),
-                                                conditionalPanel(condition = "input.gene_number == 'List of Genes'",
-                                                                 ## Select gene list
-                                                                 fluidRow(column(2,textAreaInput(inputId = "gene.list", label= "Set of genes", width="90%",
-                                                                                                 height = "120px",placeholder = "Insert set of genes",
-                                                                                                 value = "Rsub_00001 \t Rsub_00002 \t Rsub_00003")),
-                                                                ## Select Neighbours
-                                                                          column(2,selectInput(inputId = "distance_list", 
-                                                                                               label = "Select Neighbours:", 
-                                                                                               choices = 0:3,
-                                                                                               selected = 0,
-                                                                                               multiple = FALSE,
-                                                                                               width = 200)),
-                                                                ## Final Button
-                                                                          column(2, br(),shinyWidgets::actionBttn("button_gene_list", "Let's go",
-                                                                                                                  size = "sm", icon = icon("magnifying-glass"),
-                                                                                                                  style = "float", color = "primary")))),
+                                                selectInput(inputId = "module_sel", 
+                                                            label = "Choose your favorite module",
+                                                            choices = unique(network.data$module),multiple = F,
+                                                            width = 250),
+                                                
+                                                            br(),
+                                                shinyWidgets::actionBttn("button_gene_id", "Let's go",
+                                                                         size = "sm", icon = icon("magnifying-glass"),
+                                                                         style = "float", color = "primary")
                                                 ),
                                             br(),
-                                            box(status = "info",  width = "500",
+                                            # Results
+                                            box(status = "info",  width = "500",height = "1200",
                                                 title = span(tags$b("Results"), style = "color:#34c5d1; font-size: 16px; "),
                                                 " The",tags$b(tags$i("Raphidocelis subcapitata"))," transcriptome network are 
                                                 displayed below. The execution of the", tags$b("Start button"),"enable the
-                                                visualization of the selected genes and their neighbours in the network.",
+                                                visualization of the selected modules and their correlations in the network.",
                                                 div(br()),
-                                                div(tags$img(src = 'work-in-progress.png',title= "work", height ="400px"), align= "center"),
                                                 fluidRow(column(12,align="center",
                                                                 tags$div(id = "box_network"))))
                                             ))
@@ -511,7 +488,7 @@ ui <- dashboardPage(
 
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output,session) {
   
   # Initiation UI
   box_rhythm_exits <<- F
@@ -652,13 +629,63 @@ server <- function(input, output) {
   })
   
   ## Network visualization
+  
   observeEvent(input$button_gene_id,{
     shinyjs::showElement(id = 'loading.graph')
     
     
+    if(box_network_exits)
+    {
+      removeUI(
+        selector = "div:has(>>> #plot_Network)",
+        multiple = TRUE,
+        immediate = TRUE
+      )
+      box_network_exits <<- F
+    }
+    
+    ## Tranforming coordinates for a better visualization
+    x.coord <- as.numeric(network.data$y.pos)
+    y.coord <- as.numeric(network.data$x.pos)
+    
+    network.data$x.pos <- x.coord
+    network.data$y.pos <- y.coord
+    
+    pos.data <- t(matrix(data=c(x.coord,y.coord),ncol=2))
+    
+    color_mod <- input$module_sel
+    
+    network.data$color <- ifelse(as.character(network.data$module) == as.character(color_mod), color_mod, "gray90")
+    
+    ## Initial/default visualization of BRC1NET
+    default.network.visualization <- ggplot(network.data, aes(x.pos,y.pos)) + 
+      theme(panel.background = element_blank(), 
+            panel.grid.major = element_blank(), 
+            panel.grid.minor = element_blank(),
+            axis.title = element_blank(),
+            axis.text = element_blank(),
+            axis.ticks.y = element_blank()) + 
+      geom_point(size=1,aes(colour = factor(color))) +
+      scale_color_manual(values = c(color_mod, "gray90"),breaks = c(color_mod, "gray90"))+
+      theme(legend.position = "none")
+    #geom_text(data=cluster.pos,aes(label=cluster.name,fontface="bold"),size=8)
+    
+    
+    insertUI("#box_network", "afterEnd", ui = {
+      box(width = 12,height = 700,
+          title = "Transcriptomic Network", status = "primary", solidHeader = TRUE,
+          collapsible = TRUE,
+          plotOutput("plot_Network"))
+    })
+    
+    box_network_exits <<- T
+    
+    output$plot_Network <- renderPlot({
+      default.network.visualization },height = 600)
     
   })
 }
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
