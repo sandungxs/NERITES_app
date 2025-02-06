@@ -439,7 +439,9 @@ ui <- dashboardPage(
                                                 visualization of the selected modules and their correlations in the network.",
                                                 div(br()),
                                                 fluidRow(column(12,align="center",
-                                                                tags$div(id = "box_network"))))
+                                                                tags$div(id = "box_network"))),
+                                                fluidRow(column(12,align="center",
+                                                                tags$div(id = "box_asso"))))
                                             ))
                             ),
                     
@@ -495,6 +497,7 @@ server <- function(input, output,session) {
   box_rhythm_table_exits <<-F
   box_circa_table_exits <<- F
   box_network_exits <<- F
+  box_asso_exits <<- F
 
   ## Rhythm exploration
   
@@ -657,7 +660,7 @@ server <- function(input, output,session) {
     
     network.data$color <- ifelse(as.character(network.data$module) == as.character(color_mod), color_mod, "gray90")
     
-    ## Initial/default visualization of BRC1NET
+    ## Initial/default visualization
     default.network.visualization <- ggplot(network.data, aes(x.pos,y.pos)) + 
       theme(panel.background = element_blank(), 
             panel.grid.major = element_blank(), 
@@ -683,7 +686,61 @@ server <- function(input, output,session) {
     output$plot_Network <- renderPlot({
       default.network.visualization },height = 600)
     
+    ## Module Association
+    
+    # Load the data
+    correlation_data <- read.csv("data/correlation_data.tsv",header=T)
+    pvalue_data <- read.csv("data/pvalue_data.tsv",header=T)
+    
+    # Transform into ggplot format
+    cor_long <- reshape2::melt(correlation_data)
+    pval_long <- reshape2::melt(pvalue_data)
+
+    # Select the module
+
+    cor_long <- subset(cor_long, cor_long$X %in% color_mod)
+    pval_long <- subset(pval_long, pval_long$X %in% color_mod)
+
+    # Heatmap
+    heatmap <- ggplot(cor_long, aes(variable,X, fill = value)) +
+      geom_tile() +
+      geom_text(aes(label = paste(value,"(",pval_long$value,")")), color = "black", size = 6) +
+      scale_fill_gradient2(low = "blue", mid = "white", high = "red") +
+      labs(title = "Heatmap con ggplot2") +
+      theme_minimal()+
+      labs(x = NULL, y = NULL,title = NULL,fill=NULL) +
+      theme(axis.text.x = element_text(size = 17),
+            axis.text.y = element_blank())
+
+    
+    
+    if(box_asso_exits)
+    {
+      removeUI(
+        selector = "div:has(>>> #plot_Heatmap)",
+        multiple = TRUE,
+        immediate = TRUE
+      )
+      box_asso_exits <<- F
+    }
+    
+    insertUI("#box_asso", "afterEnd", ui = {
+      box(width = 12, height = 230,
+          title = "Fisiological Correlations", status = "primary", solidHeader = TRUE,
+          collapsible = TRUE,
+          tags$div(plotOutput("plot_Heatmap")))
+    })
+    
+    box_asso_exits <<- T
+    
+    output$plot_Heatmap <- renderPlot({
+      heatmap },height = 170)
+    
   })
+  
+  
+
+  
 }
 
 
