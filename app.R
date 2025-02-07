@@ -7,6 +7,7 @@ library(shinydashboard)
 library(dashboardthemes)
 library(DT)
 library(ggplot2)
+library(mixOmics)
 
 
 ## Auxiliar functions
@@ -150,12 +151,11 @@ network.data <- read.table(file="data/nerites_network.tsv",header = TRUE,as.is=T
 rownames(network.data) <- network.data$names
 
 
+## Load the predictive model data
+X <- read.table(file = "data/X_notscaled.csv")
+X <- scale(X,center = T,scale = F)
 
-## Usefull data
-
-
-
-
+Y <- read.table(file = "data/Y_scaled")
 
 
 
@@ -436,7 +436,11 @@ ui <- dashboardPage(
                                                 title = span(tags$b("Results"), style = "color:#34c5d1; font-size: 16px; "),
                                                 " The",tags$b(tags$i("Raphidocelis subcapitata"))," transcriptome network are 
                                                 displayed below. The execution of the", tags$b("Start button"),"enable the
-                                                visualization of the selected modules and their correlations in the network.",
+                                                visualization of the selected modules in the network. Below you can see a heatmap
+                                                with the correlations values of your selected module with some physiological factor
+                                                such as photoperiod, nitrate availability, time point and total fatty acid amount.
+                                                Correlation values range from -1 to 1 with -1 being the most negative correlation
+                                                and 1 the most positive. In brackets we find the adjusted p-value of the correlation result.",
                                                 div(br()),
                                                 fluidRow(column(12,align="center",
                                                                 tags$div(id = "box_network"))),
@@ -452,8 +456,42 @@ ui <- dashboardPage(
                                               subtitle = "Tune your own predictive model",
                                               icon = icon("buromobelexperte",class="fa-brands fa-buromobelexperte",
                                                           lib ="font-awesome"), width = 6, color = "purple")),
-                            br(),br(),br(),
-                            div(tags$img(src = 'work-in-progress.png',title= "work", height ="400px"), align= "center")
+                            br(),
+                            fluidRow(column(11,tags$div(align="justify", style = 'font-size: 16px;',
+                                                        "To determine potential relationships in fatty acid metabolism,
+                                                        an", tags$b("sPLS-type predictive model")," has been implemented. Partial Least
+                                                        Squares, or projection to latent structures (PLS), is a robust
+                                                        and malleable method based on multivariate projection that can
+                                                        be used to explore or explain the relationship between two
+                                                        continuous data sets. Specifically,",tags$b("Sparse Partial Least Squares
+                                                        (sPLS)"),"is a modality of it that is able to perform simultaneous
+                                                        selection of variables in both data sets and thus extract the
+                                                        most relevant information."),
+                                            br(),
+                                            box(title = span(tags$b("Fatty Acid Selection:"), style = "color:#34c5d1; font-size: 16px; "), status = "info", width = "250",
+                                                
+                                                selectInput(inputId = "fatty_sel", 
+                                                            label = "Choose your favorite fatty acid",
+                                                            choices = colnames(Y),multiple = F,
+                                                            width = 250),
+                                                
+                                                br(),
+                                                shinyWidgets::actionBttn("button_fatty_id", "Let's go",
+                                                                         size = "sm", icon = icon("magnifying-glass"),
+                                                                         style = "float", color = "primary")
+                                            ),
+                                            br(),
+                                            # Results
+                                            box(status = "info",  width = "500",
+                                                title = span(tags$b("Results"), style = "color:#34c5d1; font-size: 16px; "),
+                                                "As a result, the weight (from 0 to 1) of the selected fatty acid in the
+                                                model and those transcription factors to which it is related are shown.",
+                                                div(br()),
+                                                fluidRow(column(12,align="center",
+                                                                tags$div(id = "box_fa_cor"))),
+                                                fluidRow(column(12,align="center",
+                                                                tags$div(id = "box_gene_cor"))))
+                            ))
                             
                             ),
                     
@@ -498,6 +536,8 @@ server <- function(input, output,session) {
   box_circa_table_exits <<- F
   box_network_exits <<- F
   box_asso_exits <<- F
+  box_fa_cor_exits <-- F
+  box_gene_cor_exits <- F
 
   ## Rhythm exploration
   
@@ -738,7 +778,69 @@ server <- function(input, output,session) {
     
   })
   
+  ## Predictive Model
+
+  # FA correlation
+  observeEvent(input$button_fatty_id,{
+    
+    # Build the model
+    spls.results <- spls(X, Y, ncomp = 3, 
+                         keepX = c(10,160,30),
+                         keepY = c(1,16,15),
+                         mode = "regression", near.zero.var = T)
+    
+    fa_cor_val <- input$fatty_sel
+    value_spls <- max(abs(spls.results$loadings$Y[fa_cor_val,]))
+    comp_spls <- which.max(abs(spls.results$loadings$Y[fa_cor_val,]))
+    
+  if(box_fa_cor_exits)
+  {
+    removeUI(
+      selector = "div:has(>>> #fa_cor)",
+      multiple = TRUE,
+      immediate = TRUE
+    )
+    box_fa_cor_exits <<- F
+  }
   
+  insertUI("#box_fa_cor", "afterEnd", ui = {
+    box(width = 12,
+        title = "Fatty Acid Load", status = "primary", solidHeader = TRUE,
+        collapsible = TRUE,
+        tags$div(textOutput("fa_cor")))
+  })
+  
+  box_fa_cor_exits <<- T
+  
+  output$fa_cor <- renderText(paste("The fatty
+  acid selected,",fa_cor_val,", has a
+  loading value of:", value_spls))
+  
+  # Loading plot
+  if(box_gene_cor_exits)
+  {
+    removeUI(
+      selector = "div:has(>>> #loading_plot)",
+      multiple = TRUE,
+      immediate = TRUE
+    )
+    box_gene_cor_exits <<- F
+  }
+  
+  insertUI("#box_gene_cor", "afterEnd", ui = {
+    box(width = 12, height = 480,
+        title = "Loading Plot", status = "primary", solidHeader = TRUE,
+        collapsible = TRUE,
+        tags$div(plotOutput("loading_plot")))
+  })
+  
+  box_gene_cor_exits <<- T
+  
+  output$loading_plot <- renderPlot(plotLoadings(spls.results,
+                        comp = comp_spls,block = "X",ndisplay = 20,
+                         title = " ",col = "purple"))
+  
+  })
 
   
 }
