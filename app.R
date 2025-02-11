@@ -224,10 +224,10 @@ ui <- dashboardPage(
                               column(11,
                                      tags$br(),
                                      tags$br(),
-                                     tags$div(align="justify", "Welcome to",tags$b("NERITES"), "the web application
+                                     tags$div(align="justify", "Welcome to",tags$b("NERITES"), "a web application
                                               that allows you to easily and autonomously explore the response of",
-                                              tags$em("Raphidocelis subcapitata"),"to nitrate stress in the medium over time,
-                                              both short and long day.",
+                                              tags$em("Raphidocelis subcapitata"),"to nitrate stress over time and
+                                              photoperiod.",
                                               style = 'font-size: 16px; margin-left: 60px;'
 
                                      ),
@@ -248,7 +248,7 @@ ui <- dashboardPage(
                                                                    lib ="font-awesome" ), width = 4, color = "lime"),
                                               
                                               valueBox(a("Predictive model", href="#shiny-tab-predictive", "data-toggle" = "tab", "style" = "color:white"),
-                                                       "Tune our predictive model",
+                                                       "Inspect our predictive model",
                                                        icon = icon("buromobelexperte",class="fa-brands fa-buromobelexperte",
                                                                    lib ="font-awesome"), width = 4, color = "purple")
                                        )),
@@ -256,16 +256,16 @@ ui <- dashboardPage(
                                      tags$div(align="justify", style = 'font-size: 16px; margin-left: 30px;',
                                               tags$ol(
                                                 tags$li(tags$b("Explore rhythmicity"), ". Enables the user to explore how rhythmic genes are affected by
-                                                        the photoperiod and abiotic stress (nitrate deficiency in the medium) to which",tags$em("R. supcapitata"),
+                                                        photoperiod and abiotic stress (nitrate availability) to which",tags$em("R. subcapitata"),
                                                         "is subjected."),
                                                 tags$br(),
-                                                tags$li(tags$b("Gene Coexpression Network"),". If desired, the user can browse the",tags$em("R. supcapitata"),
+                                                tags$li(tags$b("Gene Coexpression Network"),". If desired, the user can browse the",tags$em("R. subcapitata"),
                                                         "co-expression network generated from multiple conditions (nitrate availability, photoperiod and daytime)
                                                         to determine potentially important connections between genes."),
                                                 tags$br(),
                                                 tags$li(tags$b("Predictive model"),". To determine whether there is indeed a direct relationship between genes,
                                                         a predictive model has been made available that shows the most notable connections between particular
-                                                        genes. Several parameters of the model can be tuned by the user on demand."),
+                                                        genes."),
                                               )
                                      ),
                                      
@@ -286,7 +286,7 @@ ui <- dashboardPage(
                                        column(8, 
                                               tags$div(align="justify", style = 'font-size: 16px; margin-left: 140px;',  br(), br(),
                                                        "The freshwater ",tags$em("Cholorophyta")," unicellular microalga",tags$em("Raphidocelis
-                                                        supcapitata"),"(formerly known as ",tags$em("Selenastrum capricornutum")," and
+                                                        subcapitata"),"(formerly known as ",tags$em("Selenastrum capricornutum")," and
                                                        ",tags$em("Pseudokirchneriella subcapitata")," ) was originally harvested
                                                        and isolated from the Nitelva River (Akershus, Norway) in 1959. (NORCCA 2023a).
                                                        Its presence has been widely reported, all over the world. It is characterised by a
@@ -327,8 +327,8 @@ ui <- dashboardPage(
                                      tags$b("long day (summer day, 16h light / 8h dark) and short day (winter day, 8h light / 16h dark)"), 
                                      "conditions. In this app, users can visualize gene expression profiles of their
                              interest, compare their patterns under short day and long day conditions. Users can also
-                             perform" , tags$b("statistical analysis"),  "over the rhythmicity of gene expression profiles.", " See our", tags$b("video tutorial"),
-                                     "for details or follow the next steps to perform your analysis"),
+                             perform" , tags$b("statistical analysis"),  "over the rhythmicity of gene expression profiles.", " Follow
+                            the next steps to perform your analysis"),
                             br(),
                             box(title = span(tags$b("Photoperiod selection"), style = "color:#34c5d1; font-size: 16px; "), status = "info", width = "500",
                                 "Please select the desired photoperiod from the following list for performing the analysis:", br(),
@@ -418,7 +418,7 @@ ui <- dashboardPage(
                                                         tags$b("Module Selection panel. "),"After selecting the module you could watch his position in the network
                                                         and explore their correlation with several fisiological effects."),
                                             br(),
-                                            box(title = span(tags$b("Module Selection:"), style = "color:#34c5d1; font-size: 16px; "), status = "info", width = "250",
+                                            box(title = span(tags$b("Module Selection:"), style = "color:#25d04a; font-size: 16px; "), status = "info", width = "250",
                                                 
                                                 selectInput(inputId = "module_sel", 
                                                             label = "Choose your favorite module",
@@ -428,19 +428,19 @@ ui <- dashboardPage(
                                                             br(),
                                                 shinyWidgets::actionBttn("button_gene_id", "Let's go",
                                                                          size = "sm", icon = icon("magnifying-glass"),
-                                                                         style = "float", color = "primary")
+                                                                         style = "float", color = "success")
                                                 ),
                                             br(),
                                             # Results
                                             box(status = "info",  width = "500",height = "1200",
-                                                title = span(tags$b("Results"), style = "color:#34c5d1; font-size: 16px; "),
+                                                title = span(tags$b("Results"), style = "color:#25d04a; font-size: 16px; "),
                                                 " The",tags$b(tags$i("Raphidocelis subcapitata"))," transcriptome network are 
                                                 displayed below. The execution of the", tags$b("Start button"),"enable the
                                                 visualization of the selected modules in the network. Below you can see a heatmap
                                                 with the correlations values of your selected module with some physiological factor
                                                 such as photoperiod, nitrate availability, time point and total fatty acid amount.
-                                                Correlation values range from -1 to 1 with -1 being the most negative correlation
-                                                and 1 the most positive. In brackets we find the adjusted p-value of the correlation result.",
+                                                Correlation values range from -1 being the most negative correlation
+                                                to 1 being the most positive. In brackets we find the adjusted p-value of the correlation result.",
                                                 div(br()),
                                                 fluidRow(column(12,align="center",
                                                                 tags$div(id = "box_network"))),
@@ -453,7 +453,7 @@ ui <- dashboardPage(
                     tabItem(tabName = "predictive",
                             h2(""),
                             fluidRow(valueBox("Predictive model",
-                                              subtitle = "Tune your own predictive model",
+                                              subtitle = "Inspect your own predictive model",
                                               icon = icon("buromobelexperte",class="fa-brands fa-buromobelexperte",
                                                           lib ="font-awesome"), width = 6, color = "purple")),
                             br(),
@@ -468,7 +468,8 @@ ui <- dashboardPage(
                                                         selection of variables in both data sets and thus extract the
                                                         most relevant information."),
                                             br(),
-                                            box(title = span(tags$b("Fatty Acid Selection:"), style = "color:#34c5d1; font-size: 16px; "), status = "info", width = "250",
+                                            box(title = span(tags$b("Fatty Acid Selection:"), style = "color:#5e3587; font-size: 16px; "),
+                                                status = "info", width = "250",
                                                 
                                                 selectInput(inputId = "fatty_sel", 
                                                             label = "Choose your favorite fatty acid",
@@ -478,12 +479,12 @@ ui <- dashboardPage(
                                                 br(),
                                                 shinyWidgets::actionBttn("button_fatty_id", "Let's go",
                                                                          size = "sm", icon = icon("magnifying-glass"),
-                                                                         style = "float", color = "primary")
+                                                                         style = "float", color = "royal")
                                             ),
                                             br(),
                                             # Results
                                             box(status = "info",  width = "500",
-                                                title = span(tags$b("Results"), style = "color:#34c5d1; font-size: 16px; "),
+                                                title = span(tags$b("Results"), style = "color:#5e3587; font-size: 16px; "),
                                                 "As a result, the weight (from 0 to 1) of the selected fatty acid in the
                                                 model and those transcription factors to which it is related are shown.",
                                                 div(br()),
@@ -716,7 +717,7 @@ server <- function(input, output,session) {
     
     insertUI("#box_network", "afterEnd", ui = {
       box(width = 12,height = 700,
-          title = "Transcriptomic Network", status = "primary", solidHeader = TRUE,
+          title = "Transcriptomic Network", status = "success", solidHeader = TRUE,
           collapsible = TRUE,
           plotOutput("plot_Network"))
     })
@@ -766,7 +767,7 @@ server <- function(input, output,session) {
     
     insertUI("#box_asso", "afterEnd", ui = {
       box(width = 12, height = 230,
-          title = "Fisiological Correlations", status = "primary", solidHeader = TRUE,
+          title = "Fisiological Correlations", status = "success", solidHeader = TRUE,
           collapsible = TRUE,
           tags$div(plotOutput("plot_Heatmap")))
     })
@@ -805,7 +806,7 @@ server <- function(input, output,session) {
   
   insertUI("#box_fa_cor", "afterEnd", ui = {
     box(width = 12,
-        title = "Fatty Acid Load", status = "primary", solidHeader = TRUE,
+        title = "Fatty Acid Load", status = "info", solidHeader = TRUE,
         collapsible = TRUE,
         tags$div(textOutput("fa_cor")))
   })
@@ -829,7 +830,7 @@ server <- function(input, output,session) {
   
   insertUI("#box_gene_cor", "afterEnd", ui = {
     box(width = 12, height = 480,
-        title = "Loading Plot", status = "primary", solidHeader = TRUE,
+        title = "Loading Plot", status = "info", solidHeader = TRUE,
         collapsible = TRUE,
         tags$div(plotOutput("loading_plot")))
   })
